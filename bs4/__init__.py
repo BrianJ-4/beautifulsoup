@@ -1051,8 +1051,23 @@ class BeautifulSoup(Tag):
             self._most_recent_element.next_element = tag
         self._most_recent_element = tag
         self.pushTag(tag)
-        if self.replacer and self.replacer.match(tag):
-            self.replacer.replace(tag)
+
+        # Apply SoupReplacer transformations
+        if self.replacer:
+            # Name transformation
+            if self.replacer.name_xformer:
+                new_name = self.replacer.name_xformer(tag)
+                if new_name and new_name != tag.name:
+                    tag.name = new_name
+            # Attribute transformation
+            if self.replacer.attrs_xformer:
+                new_attrs = self.replacer.attrs_xformer(tag)
+                if isinstance(new_attrs, dict):
+                    tag.attrs = new_attrs
+            # Full tag transformer
+            if self.replacer.xformer:
+                self.replacer.xformer(tag)
+        
         return tag
 
     def handle_endtag(self, name: str, nsprefix: Optional[str] = None) -> None:

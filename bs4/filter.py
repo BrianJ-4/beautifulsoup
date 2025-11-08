@@ -311,18 +311,17 @@ class StringMatchRule(MatchRule):
 
 
 class SoupReplacer():
-    def __init__(self, og_tag, alt_tag):
-        self.og_tag = og_tag # Original tag name to look for (string)
-        self.alt_tag = alt_tag # Replacement tag name (string)
-
-    def match(self, tag):
-        """Return True if this tag matches the one to replace."""
-        return getattr(tag, "name", None) == self.og_tag
-
-    def replace(self, tag):
-        """Rename the tag in place."""
-        tag.name = self.alt_tag
-        return tag
+    def __init__(self, og_tag = None, alt_tag = None, name_xformer = None, attrs_xformer = None, xformer = None):
+        # Simple tag replacement
+        if og_tag and alt_tag:
+            self.name_xformer = lambda tag: (alt_tag if tag.name == og_tag else tag.name)
+            self.attrs_xformer = None
+            self.xformer = None
+        # Functional tag replacement
+        else:
+            self.name_xformer = name_xformer
+            self.attrs_xformer = attrs_xformer
+            self.xformer = xformer
 
 class SoupStrainer(ElementFilter):
     """The `ElementFilter` subclass used internally by Beautiful Soup.
